@@ -11,9 +11,10 @@ const observer = new IntersectionObserver((entries) => {
     });
 }, options);
 
-let interval;
 let currentPos;
-let endPos
+let endPos;
+let gap;
+let interval;
 
 if (isOverflown(carousel)) {
     observer.observe(carousel);
@@ -31,7 +32,8 @@ window.addEventListener("resize", () => {
 
 function startAutoplay() {
     const slides = document.getElementsByClassName("slide");
-    endPos = carousel.scrollWidth + 16;
+    gap = parseInt(getComputedStyle(slides[1]).getPropertyValue("--gap")) * 16; // rem
+    endPos = carousel.scrollWidth + gap;
 
     Array.from(slides).forEach(slide => {
         carousel.appendChild(slide.cloneNode(true));
@@ -86,6 +88,9 @@ function handleStopDrag(event) {
     // event.preventDefault();
     if (!isDragging) return;
     isDragging = false;
+    if (carousel.scrollLeft >= endPos) {
+        carousel.scrollLeft -= endPos;
+    }
     currentPos = carousel.scrollLeft;
     interval = setInterval(frame, 20);
 }

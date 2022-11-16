@@ -47,32 +47,6 @@ img {
     white-space: nowrap;
 }
 
-.carousel-btn-next,
-.carousel-btn-prev {
-    --item-height: 2rem;
-    cursor: pointer;
-    fill: var(--clr-carousel-btn);
-    height: var(--item-height);
-    opacity: 0.6;
-    position: absolute;
-    top: calc(50% - var(--item-height) / 2);
-    transition: opacity 200ms ease;
-    width: calc(var(--item-height) * 0.75);
-}
-
-.carousel-btn-next:hover,
-.carousel-btn-prev:hover {
-    opacity: 1;
-}
-
-.carousel-btn-next {
-    right: 0.5rem;
-}
-
-.carousel-btn-prev {
-    left: 0.5rem;
-}
-
 .slide {
     --gap: 1rem;
     --item-amount: 6;
@@ -122,13 +96,3 @@ img {
         --item-amount: 1;
     }
 }
-
-/* utility */
-.hide {
-    display: none;
-}
-
-.show {
-    display: block;
-}
-
