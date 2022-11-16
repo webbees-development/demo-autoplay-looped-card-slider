@@ -43,8 +43,9 @@ img {
 .carousel {
     cursor: pointer;
     font-size: 0;
-    overflow: hidden;
+    position: relative;
     white-space: nowrap;
+    will-change: transform;
 }
 
 .slide {

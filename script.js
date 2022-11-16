@@ -4,98 +4,99 @@
 // ------ Overall Variables ------ //
 const carousel = document.querySelector(".carousel");
 
+let duration = 12000;
+let animation = undefined;
+let endPos = undefined;
+let timeout = undefined;
+let overflown = false;
+
 const options = { threshold: 0.5 };
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-        startAutoplay();
+        moveX();
     });
 }, options);
 
-let currentPos;
-let endPos;
-let gap;
-let interval;
+initSlider();
 
-if (isOverflown(carousel)) {
-    observer.observe(carousel);
-}
 
 window.addEventListener("resize", () => {
-    carousel.scrollLeft = 0;
+    initSlider();
+
+    if (animation) {
+        animation.cancel();
+        animation = undefined;
+
+        if (overflown) {
+            timeout = setTimeout(moveX, 1000);
+        }  
+    } 
+
+    if (timeout) {
+        clearTimeout(timeout);
+        timeout = undefined;
+        if (overflown) {
+            timeout = setTimeout(moveX, 1000);
+        }
+    }
+});
+
+function initSlider() {
+    const copiedSlides = document.getElementsByClassName("copy");
+    if (copiedSlides) {
+        Array.from(copiedSlides).forEach(slide => {
+            slide.remove();
+        });
+    }
+    const slides = document.getElementsByClassName("slide");
+    const gap = parseInt(getComputedStyle(slides[1]).getPropertyValue("--gap")) * 16; // rem
+    endPos = carousel.scrollWidth + gap;
+    overflown = isOverflown(carousel);
 
     if (isOverflown(carousel)) {
         observer.observe(carousel);
-    }
 
-    // when changing to a bigger screen, it will still cycle because the slides have already been doubled
+        Array.from(slides).forEach(slide => {
+            const newNode = slide.cloneNode(true);
+            newNode.classList.add("copy");
+            carousel.appendChild(newNode);
+        });
+    }
+}
+
+carousel.addEventListener("mouseenter", () => {
+    if (animation) {
+        animation.pause();
+    }
 });
 
-function startAutoplay() {
-    const slides = document.getElementsByClassName("slide");
-    gap = parseInt(getComputedStyle(slides[1]).getPropertyValue("--gap")) * 16; // rem
-    endPos = carousel.scrollWidth + gap;
-
-    Array.from(slides).forEach(slide => {
-        carousel.appendChild(slide.cloneNode(true));
-    });
-
-    currentPos = carousel.scrollLeft;
-    interval = setInterval(frame, 20);  
-}
-
-function frame() {
-    currentPos += 0.5;
-    carousel.scrollLeft = currentPos;
-    if (currentPos === endPos) {
-        carousel.scrollLeft = 0;
-        currentPos = 0;
-    };
-}  
-
-// ------ Drag Function ------ //
-let isDragging = false;
-let startMousePos = 0;
-let startScrollLeft = 0;
-
-carousel.addEventListener("mousedown", handleStartDrag);
-carousel.addEventListener("touchstart", handleStartDrag);
-
-carousel.addEventListener("mousemove", handleMoveDrag);
-carousel.addEventListener("touchmove", handleMoveDrag);
-
-carousel.addEventListener("mouseup", handleStopDrag);
-carousel.addEventListener("touchend", handleStopDrag);
-
-function handleStartDrag(event) {
-    if (event.cancelable) {
-        event.preventDefault();
-        isDragging = true;
-        clearInterval(interval);
-        interval = null;
-        // check if mouse or touch event
-        startMousePos = event.pageX ? event.pageX : event.changedTouches[0].pageX;
-        startScrollLeft = carousel.scrollLeft;
+carousel.addEventListener("mouseleave", () => {
+    if (animation) {
+        animation.play();
     }
-}
-
-function handleMoveDrag(event) {
-    // event.preventDefault();
-    if (!isDragging) return;
-    carousel.scrollLeft = startScrollLeft + startMousePos - (event.pageX ? event.pageX : event.changedTouches[0].pageX);
-}
-
-function handleStopDrag(event) {
-    // event.preventDefault();
-    if (!isDragging) return;
-    isDragging = false;
-    if (carousel.scrollLeft >= endPos) {
-        carousel.scrollLeft -= endPos;
-    }
-    currentPos = carousel.scrollLeft;
-    interval = setInterval(frame, 20);
-}
+});
 
 // ------ Utility Functions ------ //
 function isOverflown(element) {
     return element.clientWidth < element.scrollWidth || element.clientHeight < element.scrollHeight;
+}
+
+function moveX() {
+    if (!animation) {
+        animation = carousel.animate(
+            [
+                { transform: `translateX(-${0}px)` },
+                { transform: `translateX(-${endPos}px)` }
+            ], 
+            { 
+                duration: duration, 
+                iterations: Infinity,
+                fill: "forwards",
+            }
+        );
+    }
+}
+
+function getPosX(element) {
+    return Math.abs(new WebKitCSSMatrix(window.getComputedStyle(element).transform).m41);
 }
